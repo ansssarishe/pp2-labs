@@ -160,7 +160,7 @@ print(thislist)
 #list2 will only be a reference to list1, and changes made in list1 will automatically also be made in list2.
 
 thislist = ["apple", "banana", "cherry"]
-mylist = thislist.copy()
+mylist = thislist.copy() #asdakjs
 print(mylist)
 
 #thislist = ["apple", "banana", "cherry"]
@@ -190,4 +190,219 @@ A tuple is a collection which is ordered and unchangeable.
 
 Tuples are written with round brackets.
 """
+thistuple = ("apple",) #comma is essential if i want to create tuple with one element
+print(type(thistuple))
 
+#NOT a tuple
+thistuple = ("apple")
+print(type(thistuple))
+
+#A tuple can contain different data types
+tuple1 = ("abc", 34, True, 40, "male")
+print(tuple1)
+
+#Once a tuple is created, you cannot change its values. Tuples are unchangeable, or immutable as it also is called.
+#But there is a workaround. You can convert the tuple into a list, change the list, and convert the list back into a tuple.
+
+x = ("apple", "banana", "cherry")
+#y = list(x)
+#y[1] = "kiwi"
+#x = tuple(y)
+#print(x)
+
+thistuple = ("apple", "banana", "cherry")
+y = ("orange",)
+thistuple += y #or we can just add tuples
+print(thistuple) 
+
+#Unpacking a tuple
+fruits = ("apple", "banana", "cherry")
+(green, yellow, red) = fruits
+print(green)
+print(yellow)
+print(red)
+
+fruits = ("apple", "banana", "cherry", "strawberry", "raspberry")
+(green, *yellow, red) = fruits
+print(green)
+print(yellow)
+print(red)
+
+tuple1 = ("a", "b" , "c")
+tuple2 = (1, 2, 3)
+tuple3 = tuple1 + tuple2 #tuple can be added
+print(tuple3)
+
+fruits = ("apple", "banana", "cherry")
+mytuple = fruits * 2 #tuple can be multiplied
+print(mytuple)
+
+
+
+
+#Sets 
+#A set is a collection which is unordered, unchangeable*, and unindexed.
+#Set items are unchangeable, but you can remove items and add new items.
+#In Python sets are written with curly brackets.
+thisset = {"apple", "banana", "cherry"}
+print(thisset)
+#Duplicates are not allowed
+thisset = {"apple", "banana", "cherry", "apple"} #this will not be added
+print(thisset)
+#Set can contain different data types at once
+
+#You cannot access items in a set by referring to an index or a key.
+#But you can loop through the set items using a for loop, or ask if a specified value is present in a set, by using the in keyword.
+thisset = {"apple", "banana", "cherry"}
+for x in thisset:
+    print(x)
+print("banana" in thisset)
+
+#Once a set is created, you cannot change its items, but you can add new items.
+thisset.add("orange")
+print(thisset)
+
+thisset = {"apple", "banana", "cherry"}
+tropical = {"pineapple", "mango", "papaya"}
+thisset.update(tropical) #self explanotary
+print(thisset)
+
+thisset = {"apple", "banana", "cherry"}
+thisset.remove("banana") #no elements will raise an error
+print(thisset)
+
+thisset = {"apple", "banana", "cherry"}
+thisset.discard("banana") #no elements will NOT raise an error
+print(thisset)
+
+thisset.pop() #removes the random element element
+
+"""
+There are several ways to join two or more sets in Python.
+
+The union() and update() methods joins all items from both sets.
+
+The intersection() method keeps ONLY the duplicates.
+
+The difference() method keeps the items from the first set that are not in the other set(s).
+
+The symmetric_difference() method keeps all items EXCEPT the duplicates.
+"""
+
+set1 = {"apple", "banana", "cherry"}
+set2 = {"google", "microsoft", "apple"}
+set3 = set1.symmetric_difference(set2)
+print(set3)
+
+#The difference_update() method will also keep the items from the first set that are not in the other set, but it will change the original set instead of returning a new set.
+set1 = {"apple", "banana", "cherry"}
+set2 = {"google", "microsoft", "apple"}
+set1.difference_update(set2)
+print(set1)
+
+
+#Dictionaries
+#Dictionaries are used to store data values in key:value pairs.
+#A dictionary is a collection which is ordered*, changeable and do not allow duplicates.
+thisdict = {
+  "brand": "Ford",
+  "model": "Mustang",
+  "year": 1964
+}
+print(thisdict)
+print(thisdict["brand"])
+x = thisdict.keys()
+print(x)
+
+thisdict = {
+  "brand": "Ford",
+  "model": "Mustang",
+  "year": 1964
+}
+thisdict.update({"color": "red"}) #adds a new key value pair
+print(thisdict)
+thisdict.pop("model")
+print(thisdict)
+
+for x in thisdict:
+  print(x)
+for x in thisdict.values():
+  print(x)
+for x in thisdict:
+  print(thisdict[x])
+for x, y in thisdict.items():
+  print(x, y)
+thisdict = {
+  "brand": "Ford",
+  "model": "Mustang",
+  "year": 1964
+}
+mydict = thisdict.copy()
+print(mydict)
+
+
+myfamily = {
+  "child1" : {
+    "name" : "Emil",
+    "year" : 2004
+  },
+  "child2" : {
+    "name" : "Tobias",
+    "year" : 2007
+  },
+  "child3" : {
+    "name" : "Linus",
+    "year" : 2011
+  }
+}
+print(myfamily)
+print(myfamily["child2"]["name"])
+
+for x, obj in myfamily.items():
+  print(x)
+
+  for y in obj:
+    print(y + ':', obj[y])
+
+
+
+
+#If Statements
+a = 33
+b = 33
+if b > a:
+  print("b is greater than a")
+elif a == b:
+  print("a and b are equal")
+
+if a > b: print("a is greater than b")
+
+a = 330
+b = 330
+print("A") if a > b else print("=") if a == b else print("B")
+
+i = 1
+while i < 6:
+  print(i)
+  i += 1
+
+i = 1
+while i < 6:
+  print(i)
+  if i == 3:
+    break
+  i += 1
+
+i = 0
+while i < 6:
+  i += 1
+  if i == 3:
+    continue
+  print(i)
+
+for x in "banana":
+  print(x)
+
+#for loops cannot be empty, but if you for some reason have a for loop with no content, put in the pass statement to avoid getting an error.
+for x in [0, 1, 2]:
+  pass
