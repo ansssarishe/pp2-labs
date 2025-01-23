@@ -1,4 +1,4 @@
-import random
+import randomcat
 string = input("Enter a string ")
 n = 0
 ans = []
