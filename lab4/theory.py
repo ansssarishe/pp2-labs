@@ -38,7 +38,52 @@ print(myfunc1())
 
 
 
-import test
+import random
 
-list2 = [2, 3, 5, 6, 7]
-test.sum(list2)
+x = dir(random)
+
+# print(x) will print every function in random
+
+
+import datetime
+
+y = datetime.datetime.now()
+
+print(y)
+print(y.year)
+print(y.strftime("%A"))
+
+z = datetime.datetime(2020, 5, 17)
+
+print(z)
+
+
+
+import json
+
+# some JSON:
+x =  '{ "name":"John", "age":30, "city":"New York"}'
+
+# parse x:
+y = json.loads(x)
+
+# the result is a Python dictionary:
+print(y["age"])
+
+import json
+
+# a Python object (dict):
+x = {
+  "name": "John",
+  "age": 30,
+  "city": "New York"
+}
+
+# convert into JSON:
+y = json.dumps(x)
+
+# the result is a JSON string:
+print(y)
+print(x)
+z = json.dumps(x, indent=4, separators=(". ", " = "))
+print(z)
