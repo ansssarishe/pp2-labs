@@ -1,3 +1,9 @@
-s = "asdasd  asda qwe"
-reversed_words = ' '.join(s.split()[::-1])
-print(reversed_words)
+list1 = [1, 3, 4, 5]
+
+def sum(list1):
+    sum = 0
+    for x in list1:
+        sum += x
+    print(sum)
+
+sum(list1)

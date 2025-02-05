@@ -78,6 +78,13 @@ movies = [
 }
 ]
 
+thisdict = {
+"name": "We Two",
+"imdb": 7.2,
+"category": "Romance",
+}
+
+print(thisdict.get)
 
 #1
 def worth(movie):
