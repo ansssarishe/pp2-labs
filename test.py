@@ -1,9 +1,11 @@
-list1 = [1, 3, 4, 5]
+def process_numbers(x):
+    return x % 2 == 0
 
-def sum(list1):
-    sum = 0
-    for x in list1:
-        sum += x
-    print(sum)
-
-sum(list1)
+def square(x):
+    return x * x
+        
+nums = [1, 2, 3, 4, 5, 6]
+it = iter(nums)
+ans = list(filter(process_numbers, nums))
+print(ans)
+print(list(map(square, it)))
