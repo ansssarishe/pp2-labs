@@ -39,9 +39,9 @@ def main():
             
             if event.type == pygame.KEYDOWN:
                 # Increase or decrease brush size
-                if event.key == pygame.K_a:  # Increase radius
+                if event.key == pygame.K_s:  # Increase radius
                     radius = min(100, radius + 5)
-                elif event.key == pygame.K_s:  # Decrease radius
+                elif event.key == pygame.K_a:  # Decrease radius
                     radius = max(1, radius - 5)
             
             if event.type == pygame.MOUSEBUTTONDOWN:

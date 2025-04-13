@@ -114,10 +114,12 @@ coins = pygame.sprite.Group()
 C1 = Coin()
 coins.add(C1)
 all_sprites.add(C1)
+
+coll = 0
  
 #Adding a new User event 
 INC_SPEED = pygame.USEREVENT + 1
-pygame.time.set_timer(INC_SPEED, 1000)
+pygame.time.set_timer(INC_SPEED, 1500)
  
 #Game Loop
 while True:
@@ -138,8 +140,10 @@ while True:
     DISPLAYSURF.blit(background, (0,0))
     scores = font_small.render(f"Score: {SCORE}", True, BLACK)
     coins_collected = font_small.render(f"Coins: {COINS}", True, BLACK)
+    collisions = font_small.render(f"Collisions: {coll}", True, BLACK) #sdfsdfsdf
     DISPLAYSURF.blit(scores, (10,10))
     DISPLAYSURF.blit(coins_collected, (SCREEN_WIDTH - 120, 10))
+    DISPLAYSURF.blit(collisions, (100, 10))
  
     #moving and redrawing
     for entity in all_sprites:
@@ -161,17 +165,22 @@ while True:
     #checks if player died
     if pygame.sprite.spritecollideany(P1, enemies):
           pygame.mixer.Sound('crash.wav').play()
-          time.sleep(0.5)
+          coll += 1
+
+          #time.sleep(0.5)
                     
-          DISPLAYSURF.fill(RED)
-          DISPLAYSURF.blit(game_over, (30,250))
-           
-          pygame.display.update()
-          for entity in all_sprites:
-                entity.kill() 
-          time.sleep(2)
-          pygame.quit()
-          sys.exit()     #gg   
+          #DISPLAYSURF.fill(RED)
+          #DISPLAYSURF.blit(game_over, (30,250))
+          
+          for enemy in enemies:
+              enemy.kill()
+          E1 = Enemy()
+          enemies = pygame.sprite.Group()
+          enemies.add(E1)
+          all_sprites.add(E1)
+          #time.sleep(2)
+          #pygame.quit()
+          #sys.exit()     #gg   
          
     pygame.display.update()
-    FramePerSec.tick(FPS) 
+    FramePerSec.tick(FPS)
