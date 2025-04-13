@@ -1,6 +1,8 @@
 # imports
 import pygame, sys, random, time
 from pygame.locals import *
+import psycopg2
+import json
 
 # initializing pygame
 pygame.init()
@@ -93,23 +95,150 @@ def show_start_screen():
             if event.type == KEYDOWN:
                 return  # exit the function when any key is pressed
 
-# show the start screen
+# function to connect to the database
+def connect():
+    return psycopg2.connect(
+        host="localhost",
+        database="phones",  # Same database name as in PhoneBook
+        user="ansstsvv",    # Same username as in PhoneBook
+        password="12345678" # Replace with the actual password from PhoneBook
+    )
+
+# function to handle user login
+def handle_user_login(username):
+    conn = connect()
+    cur = conn.cursor()
+
+    # Check if the user exists
+    cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+    user = cur.fetchone()
+
+    if user:
+        user_id = user[0]
+        print(f"Welcome back, {username}!")
+    else:
+        # Create a new user
+        cur.execute("INSERT INTO users (username) VALUES (%s) RETURNING id", (username,))
+        user_id = cur.fetchone()[0]
+        conn.commit()  # Commit the transaction to save the new user
+        print(f"New user created: {username}")
+
+    # Get the user's current level and score
+    cur.execute("""
+        SELECT level, score FROM user_score WHERE user_id = %s ORDER BY id DESC LIMIT 1
+    """, (user_id,))
+    user_score = cur.fetchone()
+
+    if user_score:
+        level, score = user_score
+        print(f"Current Level: {level}, Current Score: {score}")
+    else:
+        level, score = 1, 0
+        print("Starting at Level 1 with a score of 0.")
+
+    cur.close()
+    conn.close()
+    return user_id, level, score
+
+# function to save the game state
+def save_game_state(user_id, score, level, snake_pos, snake_direction, food_pos):
+    conn = connect()
+    cur = conn.cursor()
+
+    # Save the game state as JSON
+    game_state = {
+        "snake_pos": snake_pos,
+        "snake_direction": snake_direction,
+        "food_pos": food_pos
+    }
+
+    cur.execute("""
+        INSERT INTO user_score (user_id, score, level, saved_state)
+        VALUES (%s, %s, %s, %s)
+    """, (user_id, score, level, json.dumps(game_state)))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    print("Game state saved successfully!")
+
+# function to load the game state
+def load_game_state(user_id):
+    conn = connect()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT score, level, saved_state FROM user_score
+        WHERE user_id = %s ORDER BY id DESC LIMIT 1
+    """, (user_id,))
+    result = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    if result:
+        score, level, saved_state = result
+        return score, level, saved_state  # Use saved_state directly
+    else:
+        return None, None, None
+
+# Adjust game settings based on level
+def adjust_game_settings(level):
+    global FPS
+    FPS = 10 + (level - 1) * 2  # Increase speed as the level increases
+    # Add walls or other level-specific features here if needed
+
+# Pause the game and save the state
+def pause_game(user_id, score, level, snake_pos, snake_direction, food_pos):
+    print("Game paused. Saving state...")
+    save_game_state(user_id, score, level, snake_pos, snake_direction, food_pos)
+    while True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:  # Resume the game when Esc is pressed again
+                    print("Game resumed.")
+                    return
+
+# User login
+username = input("Enter your username: ")
+user_id, LEVEL, SCORE = handle_user_login(username)
+
+# Show the start screen
 show_start_screen()
+
+# Load saved game state
+saved_score, saved_level, saved_state = load_game_state(user_id)
+if saved_state:
+    SCORE = saved_score
+    LEVEL = saved_level
+    snake_pos = saved_state["snake_pos"]
+    snake_direction = saved_state["snake_direction"]
+    current_food = {"pos": saved_state["food_pos"], "type": random.choice(food_types)} if saved_state["food_pos"] else None
+    print("Loaded saved game state.")
 
 # spawn the first food
 spawn_food()
 
-# game loop
+# Adjust game settings based on the user's level
+adjust_game_settings(LEVEL)
+
+# Game loop
 while True:
-    # handle events
+    # Handle events
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
+        if event.type == KEYDOWN:
+            if event.key == K_ESCAPE:  # Pause the game
+                pause_game(user_id, SCORE, LEVEL, snake_pos, snake_direction, current_food["pos"] if current_food else None)
 
-    # handle controls
+    # Handle controls
     pressed_keys = pygame.key.get_pressed()
-    if pressed_keys[K_UP] and snake_direction != "DOWN":  # prevent reversing direction
+    if pressed_keys[K_UP] and snake_direction != "DOWN":  # Prevent reversing direction
         snake_direction = "UP"
     if pressed_keys[K_DOWN] and snake_direction != "UP":
         snake_direction = "DOWN"
@@ -118,7 +247,7 @@ while True:
     if pressed_keys[K_RIGHT] and snake_direction != "LEFT":
         snake_direction = "RIGHT"
 
-    # move the snake
+    # Move the snake
     if snake_direction == "UP":
         snake_pos.insert(0, [snake_pos[0][0], snake_pos[0][1] - CELL_SIZE])
     if snake_direction == "DOWN":
@@ -128,23 +257,18 @@ while True:
     if snake_direction == "RIGHT":
         snake_pos.insert(0, [snake_pos[0][0] + CELL_SIZE, snake_pos[0][1]])
 
-    # check if the snake eats the food
+    # Check if the snake eats the food
     if current_food and tuple(snake_pos[0]) == tuple(current_food["pos"]):
-        SCORE += current_food["type"]["weight"]  # add the food's weight to the score
-        current_food = None  # remove the food
-        if SCORE % FOOD_TO_LEVEL_UP == 0:  # level up after eating enough food
+        SCORE += current_food["type"]["weight"]  # Add the food's weight to the score
+        current_food = None  # Remove the food
+        if SCORE % FOOD_TO_LEVEL_UP == 0:  # Level up after eating enough food
             LEVEL += 1
-            FPS += 2  # increase the speed
-        spawn_food()  # spawn a new food
+            adjust_game_settings(LEVEL)  # Adjust game settings for the new level
+        spawn_food()  # Spawn a new food
     else:
-        snake_pos.pop()  # remove the tail if no food is eaten
+        snake_pos.pop()  # Remove the tail if no food is eaten
 
-    # check if the food timer has expired
-    if current_food and pygame.time.get_ticks() - food_spawn_time > current_food["type"]["timer"]:
-        current_food = None  # remove the food
-        spawn_food()  # spawn a new food
-
-    # check for collisions with walls
+    # Check for collisions with walls
     if (snake_pos[0][0] < 0 or snake_pos[0][0] >= SCREEN_WIDTH or
             snake_pos[0][1] < 0 or snake_pos[0][1] >= SCREEN_HEIGHT):
         DISPLAYSURF.fill(RED)
@@ -154,7 +278,7 @@ while True:
         pygame.quit()
         sys.exit()
 
-    # check for collisions with itself
+    # Check for collisions with itself
     if snake_pos[0] in snake_pos[1:]:
         DISPLAYSURF.fill(RED)
         DISPLAYSURF.blit(game_over, (50, 150))
@@ -163,15 +287,15 @@ while True:
         pygame.quit()
         sys.exit()
 
-    # draw everything
-    DISPLAYSURF.fill(BLACK)  # clear the screen
+    # Draw everything
+    DISPLAYSURF.fill(BLACK)  # Clear the screen
     for pos in snake_pos:
-        pygame.draw.rect(DISPLAYSURF, GREEN, pygame.Rect(pos[0], pos[1], CELL_SIZE, CELL_SIZE))  # draw the snake
+        pygame.draw.rect(DISPLAYSURF, GREEN, pygame.Rect(pos[0], pos[1], CELL_SIZE, CELL_SIZE))  # Draw the snake
     if current_food:
         pygame.draw.rect(DISPLAYSURF, current_food["type"]["color"],
-                         pygame.Rect(current_food["pos"][0], current_food["pos"][1], CELL_SIZE, CELL_SIZE))  # draw the food
+                         pygame.Rect(current_food["pos"][0], current_food["pos"][1], CELL_SIZE, CELL_SIZE))  # Draw the food
 
-    # display score and level
+    # Display score and level
     score_text = font.render(f"Score: {SCORE}", True, WHITE)
     level_text = font.render(f"Level: {LEVEL}", True, WHITE)
     DISPLAYSURF.blit(score_text, (10, 10))
