@@ -6,12 +6,38 @@ import json
 def connect():
     return psycopg2.connect(
         host="localhost",
-        database="phones",  # Replace with your database name
-        user="ansstsvv",          # Replace with your PostgreSQL username
-        password="your_password"  # Replace with your PostgreSQL password
+        database="phones",  
+        user="ansstsvv",          
+        password="12345678"  
     )
 
-# Create the PhoneBook table
+conn = connect()
+cur = conn.cursor()
+#cur.execute("""
+  #          CREATE PROCEDURE inserting(name1 VARCHAR(100), phone1 VARCHAR(15))
+   #         LANGUAGE plpgsql
+    #        AS $$
+     #       BEGIN
+      #          INSERT INTO PhoneBook (name, phone) VALUES (name1, phone1);
+       #         COMMIT;
+        #    END;
+         #   $$;
+#""")
+#cur.execute("""
+          #  CREATE PROCEDURE updating(phone1 VARCHAR(15))
+           # LANGUAGE plpgsql
+            #AS $$
+          #  BEGIN
+           #     UPDATE PhoneBook SET phone = phone1 WHERE name = name1;
+            #    COMMIT;
+         #   END;
+          #  $$;
+#""")
+conn.commit()
+cur.close()
+conn.close()
+
+
 def create_table():
     conn = connect()
     cur = conn.cursor()
@@ -26,7 +52,24 @@ def create_table():
     cur.close()
     conn.close()
 
-# Insert data from the console (with update if user exists)
+def insert_user_new():
+    name1 = input("Enter name: ")
+    phone1 = str(input("Enter phone: "))
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT 1 FROM PhoneBook WHERE name = %s", (name1,))
+    user_exists = cur.fetchone()
+    if user_exists:
+        cur.execute("CALL updating(%s, %s)", (name1, phone1))
+        print("donennne")
+    else:
+        cur.execute("CALL inserting(%s, %s)", (name1, phone1))
+        print("disdfjsdf")
+    cur.close()
+    conn.close()
+
+
+
 def insert_from_console():
     name = input("Enter name: ")
     phone = input("Enter phone: ")
@@ -50,13 +93,13 @@ def insert_from_console():
     cur.close()
     conn.close()
 
-# Insert data from a CSV file
+
 def insert_from_csv(file_path):
     conn = connect()
     cur = conn.cursor()
     with open(file_path, 'r') as file:
         reader = csv.reader(file)
-        next(reader)  # Skip the header row
+        next(reader) #propuskayem header row
         for row in reader:
             cur.execute("INSERT INTO PhoneBook (name, phone) VALUES (%s, %s)", (row[0], row[1]))
     conn.commit()
@@ -64,7 +107,7 @@ def insert_from_csv(file_path):
     cur.close()
     conn.close()
 
-# Insert or update user
+
 def insert_or_update_user(name, phone):
     conn = connect()
     cur = conn.cursor()
@@ -80,7 +123,6 @@ def insert_or_update_user(name, phone):
     cur.close()
     conn.close()
 
-# Insert many users
 def insert_many_users(users):
     conn = connect()
     cur = conn.cursor()
@@ -90,7 +132,7 @@ def insert_many_users(users):
         name = user.get("name")
         phone = user.get("phone")
 
-        # Validate phone number (example: must be digits only)
+        # checking phone number
         if phone.isdigit():
             query = """
                 INSERT INTO PhoneBook (name, phone)
@@ -109,7 +151,7 @@ def insert_many_users(users):
     cur.close()
     conn.close()
 
-# Update data in the table
+
 def update_data():
     conn = connect()
     cur = conn.cursor()
@@ -127,7 +169,7 @@ def update_data():
     cur.close()
     conn.close()
 
-# Query data with filters
+
 def query_data():
     conn = connect()
     cur = conn.cursor()
@@ -156,7 +198,7 @@ def query_data():
     cur.close()
     conn.close()
 
-# Delete data from the table
+
 def delete_data():
     conn = connect()
     cur = conn.cursor()
@@ -179,7 +221,7 @@ def delete_data():
     cur.close()
     conn.close()
 
-# Delete user by identifier
+
 def delete_user(identifier):
     conn = connect()
     cur = conn.cursor()
@@ -196,7 +238,7 @@ def delete_user(identifier):
     cur.close()
     conn.close()
 
-# View all data in the PhoneBook table
+
 def view_data():
     conn = connect()
     cur = conn.cursor()
@@ -215,7 +257,7 @@ def view_data():
     cur.close()
     conn.close()
 
-# Get records by pattern
+
 def get_records_by_pattern(pattern):
     conn = connect()
     cur = conn.cursor()
@@ -230,7 +272,7 @@ def get_records_by_pattern(pattern):
     cur.close()
     conn.close()
 
-# Get records with pagination
+
 def get_records_with_pagination(limit, offset):
     conn = connect()
     cur = conn.cursor()
@@ -246,7 +288,7 @@ def get_records_with_pagination(limit, offset):
     cur.close()
     conn.close()
 
-# Main menu
+# menu
 def main():
     create_table()
     while True:
@@ -258,8 +300,9 @@ def main():
         print("5. Query data by pattern")
         print("6. Query data with pagination")
         print("7. Delete user")
-        print("8. View all data")  # New option for viewing data
+        print("8. View all data")  
         print("9. Exit")
+        print("f  to new user")
         choice = input("Enter your choice: ")
 
         if choice == "1":
@@ -289,10 +332,13 @@ def main():
             identifier = input("Enter name or phone to delete: ")
             delete_user(identifier)
         elif choice == "8":
-            view_data()  # Call the view_data function
+            view_data() 
         elif choice == "9":
             print("Exiting...")
             break
+        elif choice == "f":
+            insert_user_new()
+            print("probably done")
         else:
             print("Invalid choice! Please try again.")
 
