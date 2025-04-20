@@ -13,26 +13,24 @@ def connect():
 
 conn = connect()
 cur = conn.cursor()
-#cur.execute("""
-  #          CREATE PROCEDURE inserting(name1 VARCHAR(100), phone1 VARCHAR(15))
-   #         LANGUAGE plpgsql
-    #        AS $$
-     #       BEGIN
-      #          INSERT INTO PhoneBook (name, phone) VALUES (name1, phone1);
-       #         COMMIT;
-        #    END;
-         #   $$;
-#""")
-#cur.execute("""
-          #  CREATE PROCEDURE updating(phone1 VARCHAR(15))
-           # LANGUAGE plpgsql
-            #AS $$
-          #  BEGIN
-           #     UPDATE PhoneBook SET phone = phone1 WHERE name = name1;
-            #    COMMIT;
-         #   END;
-          #  $$;
-#""")
+cur.execute("""
+  CREATE OR REPLACE PROCEDURE inserting(name1 VARCHAR(100), phone1 VARCHAR(15))
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO PhoneBook (name, phone) VALUES (name1, phone1);
+END;
+$$;
+""")
+cur.execute("""
+          CREATE OR REPLACE PROCEDURE updating(name1 VARCHAR(100), phone1 VARCHAR(15))
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE PhoneBook SET phone = phone1 WHERE name = name1;
+END;
+$$;
+""")
 conn.commit()
 cur.close()
 conn.close()
@@ -65,8 +63,10 @@ def insert_user_new():
     else:
         cur.execute("CALL inserting(%s, %s)", (name1, phone1))
         print("disdfjsdf")
+    conn.commit()
     cur.close()
     conn.close()
+
 
 
 
