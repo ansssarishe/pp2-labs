@@ -32,3 +32,10 @@ class Camera:
             dx += -speed_sin
             dy += speed_cos
         
+        if keys[pg.K_LEFT]:
+            self.angle -= CAMERA_ANGULAR_SPEED * self.game.delta_time
+        if keys[pg.K_RIGHT]:
+            self.angle += CAMERA_ANGULAR_SPEED * self.game.delta_time
+            
+    def update(self):
+        self.movement()
