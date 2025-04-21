@@ -201,10 +201,46 @@ def pause_game(user_id, score, level, snake_pos, snake_direction, food_pos):
                 if event.key == K_ESCAPE:  # Resume the game when Esc is pressed again
                     print("Game resumed.")
                     return
+                
+def view_data():
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users")
+    rows = cur.fetchall()
 
+    for row in rows:
+        print(row)
+
+    cur.close()
+    conn.close()
+
+def delete_scores_for_user(username):
+    conn = connect()
+    cur = conn.cursor()
+    query = """
+        DELETE FROM users
+        WHERE username = %s
+    """
+    cur.execute(query, (username,))
+    conn.commit()
+    if cur.rowcount > 0:
+        print(f"User with identifier '{username}' deleted successfully!")
+    else:
+        print(f"No user found with identifier '{username}'.")
+    cur.close()
+    conn.close()
+    return 0
+
+view_data()
 # User login
-username = input("Enter your username: ")
-user_id, LEVEL, SCORE = handle_user_login(username)
+choice = input("press 1 to play, 2 to delete ")
+if choice == 1:
+    username = input("Enter your username: ")
+    user_id, LEVEL, SCORE = handle_user_login(username)
+else:
+    username = input("Type username to delete score ")
+    delete_scores_for_user(username)
+    
 
 # Show the start screen
 show_start_screen()
