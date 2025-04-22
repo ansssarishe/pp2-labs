@@ -4,6 +4,7 @@ from settings import *
 from camera import *
 from map import *
 from raycasting import *
+from object_renderer import *
 
 
 class Game:
@@ -18,6 +19,7 @@ class Game:
     def new_game(self): #assigns variable objects for new game
         self.map = Map(self) 
         self.camera = Camera(self)
+        self.object_renderer = ObjectRenderer(self)
         self.raycasting = RayCasting(self)
         
     def update(self):
@@ -28,6 +30,7 @@ class Game:
         
     def draw(self):
         self.screen.fill("black")
+        self.object_renderer.draw()
         self.map.draw()
         self.camera.draw()
         
